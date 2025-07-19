@@ -1,0 +1,145 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:ArLeiBurke.NodeEditor"
+
+					>
+
+
+
+	<Style TargetType="{x:Type local:NodeEditor}">
+		<Style.Resources>
+			<GeometryDrawing x:Key="SmallGridGeometry"
+                         Geometry="M0,0 L0,1 0.03,1 0.03,0.03 1,0.03 1,0 Z"
+                         Brush="#80000000" />
+
+			<!--	下面的这行代码有问题，并没有这正的绑定成功！！！！	Transform="{Binding ViewportTransform, ElementName=Editor}"  因为 ElementName 根本就不存在！！！-->
+			<!--	Canvas.Background 属性只能被设置一个Brush， 包括 DrawingBrush，如果想要叠加多个的话 那就可以通过下面的方法来实现！ 将多个 DrawingBrush 合并成一个 DrawingBrush -->
+			<DrawingBrush x:Key="SmallGridLinesDrawingBrush"
+						TileMode="Tile"
+						ViewportUnits="Absolute"
+						Viewport="0 0 15 15"
+						Transform="{Binding ViewportTransform, ElementName=Editor}"
+						 Drawing="{StaticResource SmallGridGeometry}"/>
+
+			<GeometryDrawing x:Key="LargeGridGeometry"
+                         Geometry="M0,0 L0,1 0.015,1 0.015,0.015 1,0.015 1,0 Z"
+                         Brush="#80000000" />
+
+			<DrawingBrush x:Key="LargeGridLinesDrawingBrush"
+                      TileMode="Tile"
+                      ViewportUnits="Absolute"
+                      Opacity="0.5"
+                      Viewport="0 0 150 150"
+                      Transform="{Binding ViewportTransform,RelativeSource={RelativeSource TemplatedParent}}"
+                      Drawing="{StaticResource LargeGridGeometry}" />
+
+			<!--	这个水印感觉还是有点太密集了！！而且字体看起来怪怪的，不够规整	-->
+			<!--	我给A控件写了一个Style,然后我在Style.Resources 段落里面写了好多资源，我想要B资源的某个属性通过Binding 的方式 跟A控件自身的一些依赖属性进行绑定！下面的 Transform 所用的 Binding 就是对应的剞劂方案-->
+			<VisualBrush x:Key="WatermarkBrush" TileMode="Tile" Opacity="0.15" Viewport="0,0,300,150" ViewportUnits="Absolute" 
+						 Transform="{Binding ViewportTransform,RelativeSource={RelativeSource TemplatedParent}}">
+				<VisualBrush.Visual>
+					<TextBlock Text="ArLeiBurke" FontSize="16" Foreground="Gray" RenderTransformOrigin="0.5,0.5" Width="120" Height="40">
+						<TextBlock.RenderTransform>
+							<TransformGroup>
+								<RotateTransform Angle="-45"/>
+								<ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
+							</TransformGroup>
+						</TextBlock.RenderTransform>
+					</TextBlock>
+				</VisualBrush.Visual>
+			</VisualBrush>
+
+		</Style.Resources>
+		<!--<Setter Property="VirtualizingPanel.IsVirtualizing" Value="False"/>
+		<Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>-->
+		<Setter Property="Panel.ZIndex" Value="1"/>
+		<Setter Property="Focusable" Value="True"/>
+		<Setter Property="IsTabStop" Value="False"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type local:NodeEditor}">
+					<Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+						<Grid>
+							<!--	多个图层！！！	-->
+							<Border Background="{StaticResource LargeGridLinesDrawingBrush}"/>
+							<Border x:Name="SmallBorder"/>
+							<Border Background="{StaticResource WatermarkBrush}"/>
+
+							<Canvas RenderTransform="{TemplateBinding ViewportTransform}" Width="{TemplateBinding ActualWidth}" Height="{TemplateBinding ActualHeight}" >
+								<local:NodeCanvas IsItemsHost="True" x:Name="PART_ItemsHost" Focusable="True"/>
+								<ItemsControl ItemsSource="{TemplateBinding Connections}" >
+									<!--	还不能少了下面的这几行代码，，如果没有下面这几行代码的话  就会导致Connection的效果看起来像是错位的，简单来讲就是就类似垂直排列元素的StackPanel，
+									因为ItemsControl 默认的 ItemsPanel 就是 StackPanel ，而且这个默认的 StackPanel 有显示的去设置 IsItemsHost = "True" ！！！
+									-->
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<Canvas/>
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+								</ItemsControl>
+							</Canvas>
+							<!-- 在这个地方放的控件，，会悬浮在 NodeEditor 上面！！！ -->
+
+							<StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+								<StackPanel Orientation="Horizontal">
+									<Label Content="Mouse X Position:"/>
+									<Label Content="{Binding MousePosition.X,RelativeSource={RelativeSource TemplatedParent}}" Foreground="Red"/>
+									<Label Content="Mouse Y Position"/>
+									<Label Content="{Binding MousePosition.Y,RelativeSource={RelativeSource TemplatedParent}}" Foreground="blue"/>
+								</StackPanel>
+								<StackPanel Orientation="Horizontal">
+									<Label Content="Canvas X Position:"/>
+									<Label Content="{Binding CanvasPosition.X,RelativeSource={RelativeSource TemplatedParent}}" Foreground="Red"/>
+									<Label Content="Canvas Y Position"/>
+									<Label Content="{Binding CanvasPosition.Y,RelativeSource={RelativeSource TemplatedParent}}" Foreground="blue"/>
+								</StackPanel>
+							</StackPanel>
+						</Grid>
+					</Border>
+
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<LinearGradientBrush x:Key="SelectedContainerBorderBrush">
+		<GradientStop Color="Red" Offset="0"></GradientStop>
+		<GradientStop Color="Blue" Offset="0.5"></GradientStop>
+	</LinearGradientBrush>
+
+	<Style TargetType="{x:Type local:NodeEditorContainer}">
+		<!--	下面这个 Location 的 Mode 一定是要 TwoWay,要不然Location 属性是不会自动更新的！！！	-->
+		<Setter Property="Location" Value="{Binding Location,Mode=TwoWay}"/>
+		<Setter Property="IsTabStop" Value="False"/>
+		<!--<Setter Property="IsSelected" Value="{Binding IsSelected}"/>-->
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type local:NodeEditorContainer}">
+					<Border x:Name="ContainerBorder" BorderBrush="{TemplateBinding Background}" BorderThickness="1">
+						<!--	加上下面这行阴影之后，明显能够感觉到 拖拽控件的时候有点轻微的卡顿，不够那么流畅了	-->
+						<!--<Border.Effect>
+							<DropShadowEffect Color="Black"
+                          Direction="315"
+                          ShadowDepth="5"
+                          BlurRadius="20"
+                          Opacity="0.5"/>
+						</Border.Effect>-->
+						<ContentPresenter/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsSelected" Value="True">
+							<Setter TargetName="ContainerBorder" Property="BorderBrush" Value="{StaticResource SelectedContainerBorderBrush}"/>
+							<Setter TargetName="ContainerBorder" Property="BorderThickness" Value="1"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+
+
+
+</ResourceDictionary>

@@ -1,0 +1,16 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	
+	xmlns:local="clr-namespace:ArLeiBurke.NodeEditor"
+
+	>
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="/ArLeiBurke.NodeEditor;component/Themes/Controls/NodeEditor.xaml"/>
+		<ResourceDictionary Source="/ArLeiBurke.NodeEditor;component/Themes/Controls/NodeView.xaml"/>
+		<ResourceDictionary Source="/ArLeiBurke.NodeEditor;component/Themes/Controls/Connection.xaml"/>
+		<ResourceDictionary Source="/ArLeiBurke.NodeEditor;component/Themes/Controls/Connector.xaml"/>
+	</ResourceDictionary.MergedDictionaries>
+
+
+</ResourceDictionary>
